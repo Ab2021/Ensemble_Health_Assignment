@@ -234,13 +234,3 @@ pytest tests/ -v --cov=src --cov-report=term --cov-report=html
 - API integration tests (marked as `api`, skipped by default)
 
 Key coverage: `src/prompts/templates.py` 100%, `src/utils/feature_engineering.py` 100%, `src/config/settings.py` 100%, `src/utils/explainability.py` 97%.
-
-## Limitations
-
-- Synthetic data -- real claims include ICD/CPT codes, 835 remittance data, clinical notes
-- Temporal extrapolation: current claims (2025-01) follow training data (2024-01-12)
-- Ollama Cloud API requires network; offline fallback ensures resilience
-- CalibratedClassifierCV adds ~20% training time but dramatically improves probability reliability
-- `predictions_current_claims.csv` must not be distributed outside the hiring process
-
-# Ensemble_Health_Assignment
