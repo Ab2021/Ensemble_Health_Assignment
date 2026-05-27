@@ -3,7 +3,7 @@
 ## Overview
 Complete implementation of the **Ensemble Health Partners AI Team Hiring Assessment** -- pre-bill claim denial risk prediction combining classical ML (Logistic Regression + XGB/RF baselines) with a GenAI explanation engine powered by **Ollama Cloud (gemma4:31b-cloud)** using structured JSON prompts validated through **Pydantic** models.
 
-**New in this version:**
+**This Project Contains :**
 - **Production LLM audit infrastructure** (`src/llm_audit.py`) -- token tracking, latency logging, response quality validation, HIPAA-safe JSON audit logs
 - **MLflow-compatible experiment tracker** (`src/experiment_tracker.py`) -- artifact versioning, parameter/metric logging, run comparison
 - **5-iteration active learning experiment loop** (`src/experiment_runner.py`) -- calibrated LR, XGB, RF, interaction features
@@ -241,7 +241,4 @@ Key coverage: `src/prompts/templates.py` 100%, `src/utils/feature_engineering.py
 - CalibratedClassifierCV adds ~20% training time but dramatically improves probability reliability
 - `predictions_current_claims.csv` must not be distributed outside the hiring process
 
-## Contact
-
-Abhishek -- abhishek.ai.ml@gmail.com
 # Ensemble_Health_Assignment
