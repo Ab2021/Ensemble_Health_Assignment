@@ -142,7 +142,7 @@ Low-risk claims (prob < 0.25) skip the API entirely and use the deterministic te
 
 ### 4.5 Production Quality (Verified)
 
-Latest run: **10 API calls, 0 fallbacks, 100% Pydantic pass rate, 100% disclaimer rate**
+Latest run: **125 API calls (all High-tier), 375 deterministic templates (Medium/Low), 100% Pydantic pass rate, 100% disclaimer rate**
 
 Sample explanation:
 > "This is a statistical estimate and not a guaranteed denial outcome. The claim is missing required prior authorization and supporting documentation. Resolve the missing authorization and attach all required documentation before submission."
@@ -217,21 +217,21 @@ A typical audit log (`audit_YYYYMMDD_HHMMSS.json`) contains:
 
 ```json
 {
-  "run_id": "20260527_131222",
-  "total_calls": 10,
-  "api_calls": 10,
+  "run_id": "20260527_133359",
+  "total_calls": 500,
+  "api_calls": 125,
   "fallbacks": 0,
   "token_summary": {
-    "total_prompt_tokens": 3549,
-    "total_completion_tokens": 915,
-    "total_tokens": 4464
+    "total_prompt_tokens": 44724,
+    "total_completion_tokens": 11277,
+    "total_tokens": 56001
   },
   "quality_summary": {
     "api_success_rate": 1.0,
     "json_parse_rate": 1.0,
     "pydantic_pass_rate": 1.0,
     "disclaimer_rate": 1.0,
-    "avg_latency_ms": 1087.0
+    "avg_latency_ms": 1942.0
   },
   "records": [...]
 }

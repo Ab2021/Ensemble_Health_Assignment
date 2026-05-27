@@ -43,7 +43,3 @@ coverage_html/
 coverage.xml
 *.cover
 
-ANALYSIS.md
-generate_docx.py
-WRITEUP.md
-*.docx

@@ -90,7 +90,7 @@ def generate_docx():
     bullets = [
         '45.7% of denials captured in the top 25% highest-risk claims -- nearly 2x random review',
         '125 claims flagged as High risk for immediate biller attention',
-        '10 claims receive AI-generated plain-English explanations with specific corrective actions',
+        'All 125 High-risk claims receive AI-generated plain-English explanations with specific corrective actions',
         'GenAI explanations include uncertainty disclaimers to prevent over-reliance',
         'Full audit trail for every AI-generated explanation (tokens, latency, quality validation)',
     ]
@@ -149,7 +149,8 @@ def generate_docx():
     doc.add_heading('5. GenAI Explanation Engine', level=1)
     doc.add_paragraph(
         'The system uses Ollama Cloud\'s gemma4:31b-cloud model to generate plain-English '
-        'explanations for the 10 highest-risk claims. Each explanation contains three elements:'
+        'explanations for all 125 High-risk claims, with deterministic templates covering the '
+        'remaining 375 Medium and Low-risk claims. Each explanation contains three elements:'
     )
     doc.add_paragraph('A statistical disclaimer ("This is a statistical estimate and not a guaranteed outcome")', style='List Bullet')
     doc.add_paragraph('Identification of specific risk factors (missing authorization, missing documentation)', style='List Bullet')
@@ -159,7 +160,7 @@ def generate_docx():
         'Every AI explanation is validated through a Pydantic schema before being accepted. '
         'The schema enforces disclaimer presence, minimum length, and structural completeness. '
         'If validation fails, a deterministic template is used as fallback. In the latest '
-        'production run: 10 API calls, 0 fallbacks, 100% validation pass rate.'
+        'production run: 125 API calls (all High-tier), 375 deterministic templates (Medium/Low), 100% validation pass rate.'
     )
 
     # ---- 6. Safety & Auditability ----
