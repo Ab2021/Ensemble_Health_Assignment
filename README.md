@@ -182,10 +182,9 @@ The `src/llm_audit.py` module provides production-grade observability:
 | **Aggregates** | Token summary, quality summary (pass rates, avg latency) |
 
 **Latest audit run:**
-- 10 API calls, 0 fallbacks, 100% Pydantic pass
-- 4,479 total tokens (3,546 prompt + 933 completion)
-- Average latency: 3,477 ms
-- 0 hallucination warnings
+- 125 API calls (all High-tier), 375 deterministic templates (Medium/Low)
+- 56,023 total tokens (44,724 prompt + 11,299 completion)
+- 100% coverage: all 500 claims have explanations
 
 ## Experiment Tracking
 
@@ -218,7 +217,7 @@ Each experiment run is fully reproducible with versioned artifacts. The `compare
 | `predicted_denial` | 0/1 at frozen test-set threshold |
 | `risk_tier` | High / Medium / Low (125/125/250) |
 | `top_risk_factors` | Top 3 model drivers (LR coefficient x feature) |
-| `explanation` | LLM plain-English (top 10) or blank |
+| `explanation` | LLM plain-English (High-tier: API; Medium/Low: template) |
 
 ## Tests & Coverage
 

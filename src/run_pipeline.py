@@ -343,16 +343,19 @@ if __name__ == "__main__":
     audit_logger = LLMAuditLogger(AUDIT_LOG_DIR)
     explanations = []
     for i in range(len(scored)):
-        if i < 10:
-            cid = scored.loc[i, 'claim_id']
-            prob = scored.loc[i, 'denial_probability']
-            factors = scored.loc[i, 'top_risk_factors'].split(', ')
-            cidx = df_curr[df_curr['claim_id'] == cid].index[0]
-            claim_dict = df_curr.iloc[cidx].to_dict()
+        cid = scored.loc[i, 'claim_id']
+        prob = scored.loc[i, 'denial_probability']
+        tier = scored.loc[i, 'risk_tier']
+        factors = scored.loc[i, 'top_risk_factors'].split(', ')
+        cidx = df_curr[df_curr['claim_id'] == cid].index[0]
+        claim_dict = df_curr.iloc[cidx].to_dict()
+        if tier == 'High':
+            # All High-risk claims: API-generated explanations
             expl, _ = generate_explanation(claim_dict, prob, factors, use_api=True, audit_logger=audit_logger)
-            explanations.append(expl)
         else:
-            explanations.append('')
+            # Medium/Low: deterministic template (no API cost, still actionable)
+            expl, _ = generate_explanation(claim_dict, prob, factors, use_api=False, audit_logger=audit_logger)
+        explanations.append(expl)
     scored['explanation'] = explanations
 
     audit_path = audit_logger.flush()
@@ -376,7 +379,8 @@ if __name__ == "__main__":
     assert (scored['risk_tier'] == 'High').sum() == 125
     assert (scored['risk_tier'] == 'Medium').sum() == 125
     assert (scored['risk_tier'] == 'Low').sum() == 250
-    assert scored.head(10)['explanation'].notna().all()
+    assert scored[scored['risk_tier'] == 'High']['explanation'].str.len().min() > 0, "All High-tier must have explanations"
+    assert scored[scored['risk_tier'] != 'High']['explanation'].str.len().min() > 0, "All Medium/Low must have template explanations"
     print("CSV validation passed.")
 
     metrics = {
