@@ -1,7 +1,0 @@
-{
-  "cv": 5,
-  "passthrough": true,
-  "meta": "LR",
-  "estimators": "LR+RF+GBM",
-  "type": "Stacking"
-}
