@@ -1,0 +1,19 @@
+{
+  "run_id": "20260527_114709_c27553",
+  "experiment_name": "exp4_rf_robust",
+  "timestamp": "2026-05-27T11:47:09.324496+00:00",
+  "status": "FINISHED",
+  "params": {
+    "n_estimators": 200,
+    "max_depth": 12,
+    "type": "RF"
+  },
+  "metrics": {
+    "capture_at_25": 0.39805825242718446,
+    "roc_auc": 0.6527,
+    "pr_auc": 0.3655,
+    "brier": 0.1552
+  },
+  "tags": {},
+  "artifact_uri": "D:\\Int\\EnsembleHealth\\ensemble_solution\\data\\output\\experiments\\exp4_rf_robust\\20260527_114709_c27553"
+}

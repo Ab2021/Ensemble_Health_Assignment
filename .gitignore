@@ -43,5 +43,4 @@ coverage_html/
 coverage.xml
 *.cover
 
-# -- Generated outputs (not source code) ------------
-data/output/
+

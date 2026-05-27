@@ -1,0 +1,37 @@
+{
+  "run_id": "20260526_190201_7d936c",
+  "experiment_name": "lr_hyperparameter_sweep",
+  "timestamp": "2026-05-26T19:02:01.605825+00:00",
+  "status": "FINISHED",
+  "params": {
+    "model_type": "LogisticRegression",
+    "C": 0.1,
+    "solver": "newton-cg",
+    "class_weight": "balanced",
+    "max_iter": 1000,
+    "random_state": 42,
+    "train_time_seconds": 0.03
+  },
+  "metrics": {
+    "val_capture_at_25": 0.4951,
+    "val_pr_auc": 0.4274,
+    "test_roc_auc": 0.6923,
+    "test_pr_auc": 0.5193,
+    "test_brier": 0.2098,
+    "test_capture_at_25": 0.4571,
+    "test_precision_at_25": 0.4776,
+    "test_f1": 0.4655,
+    "test_threshold": 0.5805,
+    "high_tier_count": 125,
+    "total_prompt_tokens": 3182,
+    "total_completion_tokens": 811,
+    "total_tokens": 3993,
+    "api_success_rate": 0.9
+  },
+  "tags": {
+    "run_index": "4",
+    "solver": "newton-cg",
+    "description": "Alternative solver (Newton-CG) \u2014 different optimization path"
+  },
+  "artifact_uri": "D:\\Int\\EnsembleHealth\\ensemble_solution\\data\\output\\experiments\\lr_hyperparameter_sweep\\20260526_190201_7d936c"
+}
