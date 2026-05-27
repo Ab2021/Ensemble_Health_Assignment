@@ -6,7 +6,7 @@ Complete implementation of the **Ensemble Health Partners AI Team Hiring Assessm
 **This Project Contains :**
 - **Production LLM audit infrastructure** (`src/llm_audit.py`) -- token tracking, latency logging, response quality validation, HIPAA-safe JSON audit logs
 - **MLflow-compatible experiment tracker** (`src/experiment_tracker.py`) -- artifact versioning, parameter/metric logging, run comparison
-- **5-iteration active learning experiment loop** (`src/experiment_runner.py`) -- calibrated LR, XGB, RF, interaction features
+- **10-iteration active learning experiment loop** (`src/experiment_runner.py`) -- calibrated LR, XGB, RF, interaction features, GBM, Voting, Stacking, MLP, SVC
 - **Calibrated Logistic Regression** selected as production model -- same denial capture (45.7%) with 34% better probability calibration (Brier 0.137 vs 0.209)
 
 ## Quick Start
@@ -27,7 +27,7 @@ pip install -r requirements.txt
 # 4. Run full pipeline -- single command
 python src/run_pipeline.py
 
-# 5. Run active learning experiments (5 model variants)
+# 5. Run active learning experiments (10 model variants)
 python src/experiment_runner.py
 
 # 6. Run tests with coverage
@@ -39,8 +39,6 @@ Output:
 - `data/output/metrics.json` -- test metrics and business KPIs
 - `data/output/audit_logs/` -- per-call LLM observability (tokens, latency, quality)
 - `data/output/experiments/` -- versioned experiment runs (MLflow-compatible layout)
-- `ANALYSIS.md` -- detailed results analysis, requirement alignment, and business impact
-- `WRITEUP.md` -- complete hiring assessment write-up
 - `coverage_html/` -- HTML coverage report
 
 ## Results at a Glance
@@ -59,15 +57,22 @@ Output:
 
 LR outperforms XGBoost (42.7% capture) and Random Forest (45.6% capture) on validation. Calibration does not hurt capture but makes probability-based tier assignment far more reliable.
 
-### Experiment Leaderboard
+### Experiment Leaderboard (10 Experiments)
 
 | Rank | Experiment | Capture@25 | ROC-AUC | Brier | Verdict |
 |:---:|:---|:---:|:---:|:---:|:---|
-| 1 | LR Baseline | 49.51% | 0.711 | 0.209 | Highest capture |
-| **1** | **LR + Calibration** | **49.51%** | **0.710** | **0.137** | **Best overall -- same capture, best calibration** |
-| 1 | LR + Interactions | 49.51% | 0.707 | 0.210 | No gain from extras |
-| 4 | Random Forest | 39.81% | 0.653 | 0.155 | Misses additive signal |
-| 5 | XGBoost | 35.92% | 0.615 | 0.180 | Overfits sparse data |
+| **1** | **LR Baseline** | **49.51%** | **0.711** | **0.209** | **Highest capture, simplest model** |
+| 1 | LR + Calibration | 49.51% | 0.710 | 0.137 | Best overall -- same capture, best calibration |
+| 1 | LR + Interactions | 49.51% | 0.707 | 0.210 | No gain from extra features |
+| 4 | Gradient Boosting | 48.54% | 0.708 | 0.165 | Best non-linear model; close to LR |
+| 5 | Voting Ensemble | 48.54% | 0.705 | 0.172 | LR+RF+GBM soft voting |
+| 6 | Stacking (LR meta) | 46.60% | 0.698 | 0.181 | Meta-learner doesn't improve base models |
+| 7 | SVC RBF | 45.63% | 0.688 | 0.192 | RBF kernel + Platt scaling |
+| 8 | MLP Neural Net | 43.69% | 0.672 | 0.198 | (64,32) hidden layers, ReLU |
+| 9 | Random Forest | 39.81% | 0.653 | 0.155 | Misses additive signal |
+| 10 | XGBoost | 35.92% | 0.615 | 0.180 | Overfits sparse data |
+
+**Key Insight:** This dataset has a very strong linear signal -- administrative gaps (missing prior auth, missing documentation, missing referral) are binary flags that directly predict denials. Non-linear models cannot improve on this because there is limited non-linear interaction to capture. Gradient Boosting (48.54%) comes closest to LR, confirming that careful boosting can approach linear performance on additive-feature problems.
 
 ## Project Structure
 
@@ -91,7 +96,7 @@ ensemble_solution/
 |-- src/
 |   |-- __init__.py
 |   |-- run_pipeline.py           # Main entry point
-|   |-- experiment_runner.py      # 5-iteration active learning hyperparameter sweep
+|   |-- experiment_runner.py      # 10-experiment active learning loop
 |   |-- experiment_tracker.py     # Lightweight MLflow-compatible experiment versioning
 |   |-- explanations.py           # GenAI engine: ollama.chat() + Pydantic validation
 |   |-- llm_audit.py              # LLM observability: tokens, latency, quality, audit logs
@@ -120,8 +125,6 @@ ensemble_solution/
 |-- .env.example                  # Template for .env
 |-- .gitignore
 |-- README.md
-|-- ANALYSIS.md                   # Detailed results and requirement alignment
-|-- WRITEUP.md                    # Complete take-home assessment write-up
 ```
 
 ## GenAI Explanation Engine

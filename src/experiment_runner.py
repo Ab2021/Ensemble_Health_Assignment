@@ -12,8 +12,10 @@ import json
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier, StackingClassifier
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 import xgboost as xgb
@@ -177,7 +179,71 @@ def run_experiment_suite():
             'model': LogisticRegression(C=0.1, class_weight='balanced', max_iter=1000, random_state=RANDOM_STATE),
             'params': {'C': 0.1, 'feature_set': 'interactions', 'type': 'LR'},
             'preprocessor': None # Will be created inside loop
-        }
+        },
+        # --- NEW EXPERIMENTS (v2) ---
+        {
+            'name': 'exp6_gradient_boosting',
+            'model': GradientBoostingClassifier(
+                n_estimators=200, max_depth=5, learning_rate=0.05,
+                subsample=0.8, min_samples_leaf=20,
+                random_state=RANDOM_STATE
+            ),
+            'params': {'n_estimators': 200, 'max_depth': 5, 'lr': 0.05, 'subsample': 0.8, 'type': 'GBM'},
+            'preprocessor': default_preprocessor
+        },
+        {
+            'name': 'exp7_voting_ensemble',
+            'model': VotingClassifier(
+                estimators=[
+                    ('lr', LogisticRegression(C=0.1, class_weight='balanced', max_iter=1000, random_state=RANDOM_STATE)),
+                    ('rf', RandomForestClassifier(n_estimators=200, max_depth=12, class_weight='balanced', random_state=RANDOM_STATE)),
+                    ('gbm', GradientBoostingClassifier(n_estimators=200, max_depth=5, learning_rate=0.05, subsample=0.8, random_state=RANDOM_STATE)),
+                ],
+                voting='soft',
+                weights=[2, 1, 1]
+            ),
+            'params': {'voting': 'soft', 'weights': [2,1,1], 'estimators': 'LR+RF+GBM', 'type': 'Voting'},
+            'preprocessor': default_preprocessor
+        },
+        {
+            'name': 'exp8_stacking',
+            'model': StackingClassifier(
+                estimators=[
+                    ('lr', LogisticRegression(C=0.1, class_weight='balanced', max_iter=1000, random_state=RANDOM_STATE)),
+                    ('rf', RandomForestClassifier(n_estimators=200, max_depth=12, class_weight='balanced', random_state=RANDOM_STATE)),
+                    ('gbm', GradientBoostingClassifier(n_estimators=200, max_depth=5, learning_rate=0.05, subsample=0.8, random_state=RANDOM_STATE)),
+                ],
+                final_estimator=LogisticRegression(C=1.0, max_iter=1000, random_state=RANDOM_STATE),
+                cv=5,
+                passthrough=True
+            ),
+            'params': {'cv': 5, 'passthrough': True, 'meta': 'LR', 'estimators': 'LR+RF+GBM', 'type': 'Stacking'},
+            'preprocessor': default_preprocessor
+        },
+        {
+            'name': 'exp9_mlp_neural',
+            'model': MLPClassifier(
+                hidden_layer_sizes=(64, 32),
+                activation='relu',
+                alpha=0.001,
+                batch_size=64,
+                learning_rate='adaptive',
+                max_iter=500,
+                early_stopping=True,
+                random_state=RANDOM_STATE
+            ),
+            'params': {'hidden': '(64,32)', 'activation': 'relu', 'alpha': 0.001, 'type': 'MLP'},
+            'preprocessor': default_preprocessor
+        },
+        {
+            'name': 'exp10_svc_rbf',
+            'model': CalibratedClassifierCV(
+                SVC(kernel='rbf', C=1.0, gamma='scale', class_weight='balanced', probability=False, random_state=RANDOM_STATE),
+                cv=3, method='sigmoid'
+            ),
+            'params': {'kernel': 'rbf', 'C': 1.0, 'calibration': 'sigmoid', 'type': 'SVC-Calib'},
+            'preprocessor': default_preprocessor
+        },
     ]
 
     # -- Execution --------------------------------------
@@ -255,18 +321,30 @@ def run_experiment_suite():
             tracker.fail_run(run.run_id, str(e))
 
     # -- Summary ---------------------------------------
-    report = tracker.compare_runs('exp1_lr_baseline') # Note: compare_runs takes exp_name, but our runs have different names.
-    # Fix: I'll manually iterate and find the best
-    print("\n=== Final Comparison Summary ===")
-    all_runs = []
-    for exp in experiments:
-        # Note: In my current tracker, names are unique. I need to collect manually.
-        # I'll just read the disk directories.
-        pass
-    
-    # Since launcing 5 experiments, let's just print the best one from the logs
-    print("Check data/output/experiments/ for detailed result JSONs.")
+    print("\n" + "=" * 60)
+    print("=== FINAL COMPARISON SUMMARY (10 experiments) ===")
+    print("=" * 60)
+    best_cap = 0.0
+    best_name = ""
+    import glob
+    for exp_dir in sorted(glob.glob(os.path.join(EXPERIMENTS_DIR, 'exp*'))):
+        if 'lr_hyperparameter' in exp_dir:
+            continue
+        runs = sorted(glob.glob(os.path.join(exp_dir, '*')))
+        if not runs:
+            continue
+        latest = runs[-1]
+        metrics_path = os.path.join(latest, 'metrics.json')
+        if os.path.exists(metrics_path):
+            with open(metrics_path) as f:
+                em = json.load(f)
+            cap = em.get('denial_capture_at_25', em.get('capture_at_25', 0))
+            name = os.path.basename(exp_dir)
+            print(f"  {name}: Capture@25={cap:.4f} ({cap*100:.2f}%)")
+            if cap > best_cap:
+                best_cap = cap
+                best_name = name
+    print(f"\n  >> Best: {best_name} with Capture@25={best_cap:.4f} ({best_cap*100:.2f}%)")
 
 if __name__ == "__main__":
-    from sklearn.ensemble import RandomForestClassifier # Fix import missing above
     run_experiment_suite()
