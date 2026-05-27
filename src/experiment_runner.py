@@ -7,6 +7,7 @@ for denial capture, logging all results via ExperimentTracker.
 Goal: Maximize 'denial_capture_at_top_25'.
 """
 import os
+import sys
 import json
 import numpy as np
 import pandas as pd
@@ -16,6 +17,9 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 import xgboost as xgb
+
+# Ensure src/ is on the path for modular imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.config import RANDOM_STATE, HISTORY_CSV, CURRENT_CSV, EXPERIMENTS_DIR
 from src.utils.models import evaluate_model, denial_capture_at_top_k, compute_pr_auc

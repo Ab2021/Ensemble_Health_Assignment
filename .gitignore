@@ -44,6 +44,4 @@ coverage.xml
 *.cover
 
 
-# -- Generated outputs (run pipeline to recreate) ----
-data/output/
-outputs/
+
