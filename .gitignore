@@ -1,0 +1,55 @@
+# -- Python artifacts --------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# -- Virtual environments ----------------------------
+venv/
+.env/
+
+# -- Secrets -----------------------------------------
+.env
+!.env.example
+
+# -- Data --------------------------------------------
+# assessment materials (confidential)
+*.pdf
+mail_recieved.txt
+
+# Input data (exclude from git for confidentiality)
+data/input/
+
+# Figures (generated)
+data/figures/
+*.png
+*.jpg
+*.svg
+
+# -- IDE / OS ----------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# -- Notebooks checkpoints ----------------------------
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+notebooks/
+*.ipynb
+
+# -- Coverage reports --------------------------------
+htmlcov/
+coverage_html/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+outputs/
+
+# -- Generated outputs (run pipeline to recreate) ----
+data/output/
