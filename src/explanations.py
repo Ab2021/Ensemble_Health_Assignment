@@ -325,5 +325,18 @@ def generate_explanation(
     if not text:
         fallback = build_fallback_response(payload)
         text = fallback.to_plain_text()
+        # Audit the template fallback for non-API path (Medium tier, etc.)
+        if audit_logger and not use_api:
+            prompt_text = build_explanation_prompt(payload)
+            factors_str = [f.factor for f in payload.top_risk_factors]
+            record = build_audit_record(
+                call_id=f"{payload.claim_id}_template_{uuid.uuid4().hex[:8]}",
+                claim_id=payload.claim_id, model=MODEL,
+                prompt_text=prompt_text, denial_prob=denial_prob,
+                risk_tier=payload.risk_estimate_label, risk_factors=factors_str,
+                response_text=text, is_from_api=False,
+                fallback_reason='Deterministic template (use_api=False, prob >= 0.25)',
+            )
+            audit_logger.log_call(record)
 
     return text, payload
