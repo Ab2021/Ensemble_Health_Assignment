@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.dummy import DummyClassifier
 
@@ -157,6 +158,17 @@ if __name__ == "__main__":
     lr_val = lr.predict_proba(X_val)[:, 1]
     print(f"  LR     val cap@25: {denial_capture_at_top_k(y_val, lr_val):.2%}  (best C={best_c})")
 
+    # ---- Calibrated LR (production model) ----
+    print("  Calibrating LR...")
+    cal_lr = CalibratedClassifierCV(
+        LogisticRegression(C=best_c, class_weight='balanced', max_iter=1000,
+                           solver='lbfgs', random_state=RANDOM_STATE),
+        method='sigmoid', cv=3
+    )
+    cal_lr.fit(X_train, y_train)
+    cal_val_prob = cal_lr.predict_proba(X_val)[:, 1]
+    print(f"  Cal-LR val cap@25: {denial_capture_at_top_k(y_val, cal_val_prob):.2%}")
+
     xgb_prob = None
     try:
         import xgboost as xgb
@@ -182,20 +194,23 @@ if __name__ == "__main__":
     rf_val = rf_m.predict_proba(X_val)[:, 1]
     print(f"  RF     val cap@25: {denial_capture_at_top_k(y_val, rf_val):.2%}")
 
-    models_val = {'LR': lr_val, 'RF': rf_val}
+    # Compare on validation; always deploy Calibrated LR per experiment results
+    models_val = {'LR': lr_val, 'Cal-LR': cal_val_prob, 'RF': rf_val}
     if xgb_prob is not None:
         models_val['XGB'] = xgb_prob
-    best_name = max(models_val, key=lambda k: denial_capture_at_top_k(y_val, models_val[k]))
-    best_model_map = {'LR': lr, 'RF': rf_m}
-    if xgb_prob is not None:
-        best_model_map['XGB'] = xgb_m
-    best_model = best_model_map[best_name]
+    best_score = max(denial_capture_at_top_k(y_val, v) for v in models_val.values())
+    tied = [k for k, v in models_val.items()
+            if abs(denial_capture_at_top_k(y_val, v) - best_score) < 1e-9]
+    best_name = 'Cal-LR' if 'Cal-LR' in tied else tied[0]
     print(f"\n* Best model on validation: {best_name}")
 
-    print("\nFinal test evaluation:")
-    test_prob = best_model.predict_proba(X_test)[:, 1]
-    test_thresh = float(np.percentile(test_prob, 75))
-    test_metrics = evaluate_model(best_name, y_test, test_prob, binary_threshold=test_thresh)
+    # Derive threshold from VALIDATION probabilities (no leakage)
+    val_thresh = float(np.percentile(cal_val_prob, 75))
+    print(f"  Validation-derived threshold (75th pct): {val_thresh:.4f}")
+
+    print("\nFinal test evaluation (using calibrated LR + val threshold):")
+    test_prob = cal_lr.predict_proba(X_test)[:, 1]
+    test_metrics = evaluate_model('Calibrated LR', y_test, test_prob, binary_threshold=val_thresh)
     for k, v in test_metrics.items():
         if k != 'confusion':
             print(f"  {k:20s}: {v}")
@@ -203,9 +218,10 @@ if __name__ == "__main__":
 
     print("\nChecking calibration (Brier score on validation)...")
     from sklearn.metrics import brier_score_loss
-    brier_pre = brier_score_loss(y_val, best_model.predict_proba(X_val)[:, 1])
-    print(f"  Brier on validation: {brier_pre:.4f}")
-    brier_post = brier_pre
+    brier_pre = brier_score_loss(y_val, lr.predict_proba(X_val)[:, 1])
+    brier_post = brier_score_loss(y_val, cal_lr.predict_proba(X_val)[:, 1])
+    print(f"  Brier pre-calibration:  {brier_pre:.4f}")
+    print(f"  Brier post-calibration: {brier_post:.4f}  (improvement: {brier_pre - brier_post:.4f})")
 
     print("\nRetraining on full history for scoring...")
     full_df = pd.concat([train, val, test]).reset_index(drop=True)
@@ -226,11 +242,16 @@ if __name__ == "__main__":
         dset.columns = safe_cols2
     feature_names_final = list(X_full.columns)
 
-    if best_name == 'LR':
-        final_model = LogisticRegression(C=best_c, class_weight='balanced', max_iter=1000,
-                                          solver='lbfgs', random_state=RANDOM_STATE)
-    else:
-        final_model = best_model.__class__(**best_model.get_params())
+    # Production model: calibrated LR trained on full history
+    print("Fitting production CalibratedClassifierCV on full history...")
+    prod_lr = LogisticRegression(C=best_c, class_weight='balanced', max_iter=1000,
+                                   solver='lbfgs', random_state=RANDOM_STATE)
+    prod_lr.fit(X_full, y_full)
+    final_model = CalibratedClassifierCV(
+        LogisticRegression(C=best_c, class_weight='balanced', max_iter=1000,
+                           solver='lbfgs', random_state=RANDOM_STATE),
+        method='sigmoid', cv=5
+    )
     final_model.fit(X_full, y_full)
     final_probs = final_model.predict_proba(X_curr_final)[:, 1]
 
@@ -244,14 +265,14 @@ if __name__ == "__main__":
     scored['risk_tier'] = 'Low'
     scored.loc[:124, 'risk_tier'] = 'High'
     scored.loc[125:249, 'risk_tier'] = 'Medium'
-    scored['predicted_denial'] = (scored['denial_probability'] >= test_thresh).astype(int)
+    scored['predicted_denial'] = (scored['denial_probability'] >= val_thresh).astype(int)
     print(f"  High: {(scored['risk_tier'] == 'High').sum()}, "
           f"Medium: {(scored['risk_tier'] == 'Medium').sum()}, "
           f"Low: {(scored['risk_tier'] == 'Low').sum()}")
     print(f"  Predicted denials: {scored['predicted_denial'].sum()}")
 
     print("\nExtracting risk factors...")
-    coef = final_model.coef_[0] if hasattr(final_model, 'coef_') else None
+    coef = prod_lr.coef_[0] if hasattr(prod_lr, 'coef_') else None
 
     top_factors = []
     for i in range(len(scored)):
@@ -359,15 +380,15 @@ if __name__ == "__main__":
     print("CSV validation passed.")
 
     metrics = {
-        'model': best_name,
-        'best_C': best_c if best_name == 'LR' else None,
+        'model': 'Calibrated LR',
+        'best_C': best_c,
         'test_roc_auc': test_metrics['roc_auc'],
         'test_pr_auc': test_metrics['pr_auc'],
         'test_brier': test_metrics['brier'],
         'test_capture_at_25': test_metrics['capture_at_25'],
         'test_precision_at_25': test_metrics['precision_at_25'],
         'test_f1': test_metrics['f1'],
-        'test_threshold': test_thresh,
+        'val_threshold': val_thresh,
         'brier_pre_calibration': round(brier_pre, 4),
         'brier_post_calibration': round(brier_post, 4),
         'high_tier_count': int((scored['risk_tier'] == 'High').sum()),

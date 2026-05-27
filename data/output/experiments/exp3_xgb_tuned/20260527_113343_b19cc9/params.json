@@ -1,6 +1,0 @@
-{
-  "max_depth": 6,
-  "lr": 0.05,
-  "scale_pos_weight": 3.6,
-  "type": "XGB"
-}
