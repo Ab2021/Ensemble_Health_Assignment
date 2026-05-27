@@ -1,0 +1,16 @@
+{
+  "val_capture_at_25": 0.4951,
+  "val_pr_auc": 0.4273,
+  "test_roc_auc": 0.6922,
+  "test_pr_auc": 0.5195,
+  "test_brier": 0.2098,
+  "test_capture_at_25": 0.4571,
+  "test_precision_at_25": 0.4776,
+  "test_f1": 0.4655,
+  "test_threshold": 0.5806,
+  "high_tier_count": 125,
+  "total_prompt_tokens": 3550,
+  "total_completion_tokens": 924,
+  "total_tokens": 4474,
+  "api_success_rate": 1.0
+}

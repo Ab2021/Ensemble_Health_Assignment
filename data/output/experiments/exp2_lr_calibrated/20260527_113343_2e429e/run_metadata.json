@@ -1,0 +1,19 @@
+{
+  "run_id": "20260527_113343_2e429e",
+  "experiment_name": "exp2_lr_calibrated",
+  "timestamp": "2026-05-27T11:33:43.377633+00:00",
+  "status": "FINISHED",
+  "params": {
+    "C": 0.1,
+    "calibration": "sigmoid",
+    "type": "LR-Calib"
+  },
+  "metrics": {
+    "capture_at_25": 0.49514563106796117,
+    "roc_auc": 0.7103,
+    "pr_auc": 0.4279,
+    "brier": 0.1371
+  },
+  "tags": {},
+  "artifact_uri": "D:\\Int\\EnsembleHealth\\ensemble_solution\\data\\output\\experiments\\exp2_lr_calibrated\\20260527_113343_2e429e"
+}

@@ -14,13 +14,6 @@ venv/
 .env
 !.env.example
 
-# -- Data --------------------------------------------
-# assessment materials (confidential)
-*.pdf
-mail_recieved.txt
-
-# Input data (exclude from git for confidentiality)
-data/input/
 
 # Figures (generated)
 data/figures/
@@ -49,7 +42,4 @@ coverage_html/
 .coverage.*
 coverage.xml
 *.cover
-outputs/
 
-# -- Generated outputs (run pipeline to recreate) ----
-data/output/

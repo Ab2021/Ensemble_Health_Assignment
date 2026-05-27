@@ -1,0 +1,19 @@
+{
+  "run_id": "20260527_112814_577cae",
+  "experiment_name": "exp1_lr_baseline",
+  "timestamp": "2026-05-27T11:28:14.463885+00:00",
+  "status": "FINISHED",
+  "params": {
+    "C": 0.1,
+    "class_weight": "balanced",
+    "type": "LR"
+  },
+  "metrics": {
+    "capture_at_25": 0.49514563106796117,
+    "roc_auc": 0.7113,
+    "pr_auc": 0.4297,
+    "brier": 0.2087
+  },
+  "tags": {},
+  "artifact_uri": "D:\\Int\\EnsembleHealth\\ensemble_solution\\data\\output\\experiments\\exp1_lr_baseline\\20260527_112814_577cae"
+}

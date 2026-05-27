@@ -1,0 +1,15 @@
+{
+  "model": "LR",
+  "best_C": 0.1,
+  "test_roc_auc": 0.6921,
+  "test_pr_auc": 0.5176,
+  "test_brier": 0.209,
+  "test_capture_at_25": 0.4571,
+  "test_precision_at_25": 0.4776,
+  "test_f1": 0.4655,
+  "test_threshold": 0.583536588732968,
+  "brier_pre_calibration": 0.2087,
+  "brier_post_calibration": 0.2087,
+  "high_tier_count": 125,
+  "llm_model": "gemma4:31b-cloud"
+}

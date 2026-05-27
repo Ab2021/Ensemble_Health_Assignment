@@ -1,0 +1,37 @@
+{
+  "run_id": "20260526_190425_96ff5c",
+  "experiment_name": "lr_hyperparameter_sweep",
+  "timestamp": "2026-05-26T19:04:25.664973+00:00",
+  "status": "FINISHED",
+  "params": {
+    "model_type": "LogisticRegression",
+    "C": 0.1,
+    "solver": "lbfgs",
+    "class_weight": "{0: 1, 1: 4}",
+    "max_iter": 1000,
+    "random_state": 42,
+    "train_time_seconds": 0.02
+  },
+  "metrics": {
+    "val_capture_at_25": 0.4951,
+    "val_pr_auc": 0.4284,
+    "test_roc_auc": 0.6929,
+    "test_pr_auc": 0.5188,
+    "test_brier": 0.2158,
+    "test_capture_at_25": 0.4571,
+    "test_precision_at_25": 0.4776,
+    "test_f1": 0.4655,
+    "test_threshold": 0.5998,
+    "high_tier_count": 125,
+    "total_prompt_tokens": 3551,
+    "total_completion_tokens": 921,
+    "total_tokens": 4472,
+    "api_success_rate": 1.0
+  },
+  "tags": {
+    "run_index": "5",
+    "solver": "lbfgs",
+    "description": "Explicit 1:4 class weights \u2014 emphasizes minority class recall"
+  },
+  "artifact_uri": "D:\\Int\\EnsembleHealth\\ensemble_solution\\data\\output\\experiments\\lr_hyperparameter_sweep\\20260526_190425_96ff5c"
+}
