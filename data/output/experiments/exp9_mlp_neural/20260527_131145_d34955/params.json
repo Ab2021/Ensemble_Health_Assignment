@@ -1,0 +1,6 @@
+{
+  "hidden": "(64,32)",
+  "activation": "relu",
+  "alpha": 0.001,
+  "type": "MLP"
+}

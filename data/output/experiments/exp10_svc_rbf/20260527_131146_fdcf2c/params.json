@@ -1,0 +1,6 @@
+{
+  "kernel": "rbf",
+  "C": 1.0,
+  "calibration": "sigmoid",
+  "type": "SVC-Calib"
+}

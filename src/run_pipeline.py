@@ -262,10 +262,10 @@ if __name__ == "__main__":
     })
     scored = scored.sort_values(by=['denial_probability', 'claim_id'],
                                 ascending=[False, True]).reset_index(drop=True)
+    scored['predicted_denial'] = (scored['denial_probability'] >= val_thresh).astype(int)
     scored['risk_tier'] = 'Low'
     scored.loc[:124, 'risk_tier'] = 'High'
     scored.loc[125:249, 'risk_tier'] = 'Medium'
-    scored['predicted_denial'] = (scored['denial_probability'] >= val_thresh).astype(int)
     print(f"  High: {(scored['risk_tier'] == 'High').sum()}, "
           f"Medium: {(scored['risk_tier'] == 'Medium').sum()}, "
           f"Low: {(scored['risk_tier'] == 'Low').sum()}")
